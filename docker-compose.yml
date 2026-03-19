@@ -1,0 +1,56 @@
+version: "3.9"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: review_backend_app
+    ports:
+      - "8000:8000"
+    environment:
+      APP_NAME: fastapi_reviews
+      ENV: development
+      DEBUG: "true"
+      LOG_LEVEL: INFO
+      API_PREFIX: /api
+      CORS_ORIGINS: http://localhost:8000,http://127.0.0.1:5173
+      ASYNC_DATABASE_URL: postgresql+asyncpg://postgres:123456@db:5432/review_backend
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  db:
+    image: postgres:16
+    container_name: review_backend_db
+    environment:
+      POSTGRES_DB: review_backend
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d review_backend"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    container_name: review_backend_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
