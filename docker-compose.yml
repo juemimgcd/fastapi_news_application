@@ -17,6 +17,9 @@ services:
       CORS_ORIGINS: http://localhost:8000,http://127.0.0.1:5173
       ASYNC_DATABASE_URL: postgresql+asyncpg://postgres:123456@db:5432/review_backend
       REDIS_URL: redis://redis:6379/0
+      QWEN_API_KEY: ${QWEN_API_KEY:-}
+      QWEN_BASE_URL: ${QWEN_BASE_URL:-https://dashscope.aliyuncs.com/compatible-mode/v1}
+      QWEN_EMBEDDING_MODEL: ${QWEN_EMBEDDING_MODEL:-text-embedding-v4}
     depends_on:
       db:
         condition: service_healthy

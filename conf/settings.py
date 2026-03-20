@@ -13,6 +13,14 @@ class Settings(BaseSettings):
 
     async_database_url: str
     redis_url: str
+    qwen_api_key: str = ""
+    qwen_base_url: str = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+    qwen_embedding_model: str = "text-embedding-v4"
+    ai_recommendation_candidate_limit: int = 60
+    ai_recommendation_profile_history_limit: int = 12
+    ai_recommendation_profile_favorite_limit: int = 12
+    ai_recommendation_embedding_dimensions: int = 1024
+    ai_recommendation_request_timeout: int = 30
 
     @field_validator("debug", mode="before")
     @classmethod
@@ -23,6 +31,13 @@ class Settings(BaseSettings):
                 return False
             if lowered in {"debug", "development", "dev", "true", "1", "on", "yes"}:
                 return True
+        return value
+
+    @field_validator("qwen_base_url", mode="before")
+    @classmethod
+    def normalize_qwen_base_url(cls, value):
+        if isinstance(value, str):
+            return value.strip().rstrip("/")
         return value
 
     model_config = SettingsConfigDict(

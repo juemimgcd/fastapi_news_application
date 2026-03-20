@@ -2,6 +2,9 @@ from fastapi import APIRouter, Depends, Query, HTTPException
 from conf.db_conf import get_database
 from sqlalchemy.ext.asyncio import AsyncSession
 from crud import news
+from models.users import User
+from utils import recommendation as recommendation_service
+from utils.auth import get_current_user
 from utils.response import success_response
 
 router = APIRouter(prefix="/api/news", tags=["news"])
@@ -35,6 +38,16 @@ async def get_news_list(category_id: int = Query(..., alias="categoryId", ge=1),
         "pageSize": page_size,
         "hasMore": has_more,
     })
+
+
+@router.get("/recommend")
+async def get_news_recommendations(
+        limit: int = Query(10, ge=1, le=20),
+        user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_database)
+):
+    recommendations = await recommendation_service.get_personalized_recommendations(db, user.id, limit)
+    return success_response(message="success", data=recommendations)
 
 
 @router.get("/detail")

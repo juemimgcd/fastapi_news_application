@@ -1,6 +1,6 @@
 # Review Backend
 
-基于 FastAPI + PostgreSQL + Redis 构建的资讯平台后端服务，面向“新闻浏览、用户互动、后台运营分析”场景设计。项目覆盖用户端与管理端两条业务链路，不仅实现了常规内容查询，还补充了登录留痕、收藏排行、连续登录统计等更贴近真实业务的数据能力。
+基于 FastAPI + PostgreSQL + Redis 构建的资讯平台后端服务，面向“新闻浏览、用户互动、后台运营分析”场景设计。项目覆盖用户端与管理端两条业务链路，不仅实现了常规内容查询，还补充了登录留痕、收藏排行、连续登录统计，以及基于 Qwen embedding 的个性化推荐等更贴近真实业务的数据能力。
 
 ## 项目定位
 
@@ -9,11 +9,13 @@
 - 面向资讯类产品，完成了分类浏览、详情查询、收藏、历史记录、个人中心等用户功能。
 - 额外实现了后台管理接口，支持用户分页查询、新闻检索、连续登录统计、收藏排行等运营分析能力。
 - 引入 PostgreSQL、Redis、Alembic、Docker Compose，具备基础的可部署性和可扩展性。
+- 新增 AI 个性化推荐能力，可基于用户浏览历史与收藏行为生成更贴近兴趣的新闻流。
 
 ## 项目亮点
 
 - 异步后端架构：使用 FastAPI + SQLAlchemy AsyncSession + asyncpg，面向高并发 I/O 场景设计，接口层与数据访问层分离清晰。
 - 用户行为闭环：从注册登录、个人信息维护，到浏览历史、收藏管理，再到新闻详情阅读与相关推荐，形成完整用户路径。
+- AI 推荐更贴近资讯业务：基于新闻标题、摘要、正文生成 embedding，结合用户最近浏览与收藏行为构建兴趣画像，输出个性化推荐结果。
 - 数据统计能力更贴近真实业务：
   - 通过 `user_login_log` 记录用户每日登录行为，为连续登录统计提供可靠数据基础。
   - 管理端使用 PostgreSQL 窗口函数统计“连续登录 N 天用户”，不是简单计数，更能体现 SQL 分析能力。
@@ -35,6 +37,7 @@
 - 修改密码
 - 新闻分类列表、新闻分页列表、新闻详情
 - 详情页自动增加浏览量，并返回同分类相关推荐
+- AI 个性化推荐列表，根据历史记录和收藏行为推荐新闻
 - 收藏检查、添加收藏、取消收藏、收藏列表、清空收藏
 - 浏览历史新增、分页查询、删除单条、清空历史
 
@@ -55,6 +58,8 @@
 | 数据迁移 | Alembic |
 | 缓存 | Redis |
 | 数据校验 | Pydantic v2 |
+| AI 能力 | Qwen Embedding（DashScope Compatible Mode） |
+| HTTP 客户端 | httpx |
 | 鉴权 | 基于数据库持久化 Token 的服务端鉴权 |
 | 容器化 | Docker + Docker Compose |
 
@@ -91,6 +96,7 @@ review_backend/
 - `GET /api/news/categories` 获取分类
 - `GET /api/news/list` 获取新闻分页列表
 - `GET /api/news/detail` 获取新闻详情与相关推荐
+- `GET /api/news/recommend` 获取个性化推荐列表
 
 ### 收藏相关
 
@@ -150,6 +156,13 @@ review_backend/
 
 这种方式虽然比纯 JWT 多一次查询，但在实习项目或中后台项目场景下更容易实现会话失效控制、过期管理和多角色隔离。
 
+### 5. AI 推荐能力采用“可降级”设计
+
+推荐服务优先使用 Qwen embedding 对新闻内容向量化，再结合用户历史记录与收藏行为生成兴趣画像，按语义相似度、分类偏好、热度、新鲜度进行混合排序。
+
+- 当 `QWEN_API_KEY` 已配置且网络可达时，接口返回 AI 个性化推荐结果。
+- 当未配置 Key、外部网络不可达或第三方调用失败时，接口自动退化为“行为偏好 + 热度/发布时间”的规则推荐，不会影响基础功能可用性。
+- 新闻 embedding 会缓存到 `news_embedding` 表，避免重复请求大模型接口。
 ## 本地启动
 
 ### 运行环境
@@ -187,11 +200,26 @@ ASYNC_DATABASE_URL=postgresql+asyncpg://postgres:123456@localhost:5432/review_ba
 REDIS_URL=redis://localhost:6379/0
 ```
 
+如果你要启用 AI 推荐，还需要补充 Qwen 相关配置：
+
+```env
+QWEN_API_KEY=your_dashscope_api_key
+QWEN_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+QWEN_EMBEDDING_MODEL=text-embedding-v4
+AI_RECOMMENDATION_CANDIDATE_LIMIT=60
+AI_RECOMMENDATION_PROFILE_HISTORY_LIMIT=12
+AI_RECOMMENDATION_PROFILE_FAVORITE_LIMIT=12
+AI_RECOMMENDATION_EMBEDDING_DIMENSIONS=1024
+AI_RECOMMENDATION_REQUEST_TIMEOUT=30
+```
+
 ### 3. 执行数据库迁移
 
 ```bash
 alembic upgrade head
 ```
+
+本次新增推荐功能后，迁移会额外创建 `news_embedding` 表，用于缓存新闻向量。
 
 ### 4. 启动服务
 
@@ -219,6 +247,36 @@ alembic upgrade head
 ```
 
 适合演示部署能力或快速搭建联调环境。
+
+如果需要在 Docker Compose 中启用 AI 推荐，请为 `app` 服务额外注入以下环境变量：
+
+```yaml
+QWEN_API_KEY: your_dashscope_api_key
+QWEN_BASE_URL: https://dashscope.aliyuncs.com/compatible-mode/v1
+QWEN_EMBEDDING_MODEL: text-embedding-v4
+```
+
+## AI 推荐接口说明
+
+### 推荐逻辑
+
+- 读取用户最近浏览历史与收藏记录，生成兴趣画像
+- 为新闻内容构建 embedding，并缓存到数据库
+- 按语义相似度、分类偏好、热度、发布时间综合排序
+- 如果 AI 服务不可用，自动回退为规则推荐
+
+### 请求示例
+
+```http
+GET /api/news/recommend?limit=10
+Authorization: Bearer <user_token>
+```
+
+### 响应特点
+
+- 每条推荐结果会返回 `score`
+- 每条推荐结果会返回 `reason`，说明推荐原因
+- 顶层会返回 `profileSource`，标识本次使用的是 `qwen_embedding` 还是回退策略
 
 ## 管理员初始化
 

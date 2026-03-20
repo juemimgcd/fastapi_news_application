@@ -2,7 +2,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import datetime
-from sqlalchemy import DateTime,  String,  Integer, Index, Text, ForeignKey
+from sqlalchemy import JSON, DateTime, String, Integer, Index, Text, ForeignKey
 from models.base import Base
 
 
@@ -39,3 +39,22 @@ class News(Base):
 
     def __repr__(self):
         return f"<News(id={self.id}, title='{self.title}', views={self.views})>"
+
+
+class NewsEmbedding(Base):
+    __tablename__ = "news_embedding"
+
+    __table_args__ = (
+        Index("news_embedding_news_id_unique_idx", "news_id", unique=True),
+        Index("idx_news_embedding_content_hash", "content_hash"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True, comment="向量记录ID")
+    news_id: Mapped[int] = mapped_column(Integer, ForeignKey("news.id"), nullable=False, comment="新闻ID")
+    embedding_model: Mapped[str] = mapped_column(String(100), nullable=False, comment="Embedding模型名称")
+    content_hash: Mapped[str] = mapped_column(String(64), nullable=False, comment="新闻内容哈希")
+    embedding: Mapped[list[float]] = mapped_column(JSON, nullable=False, comment="新闻向量")
+    generated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, nullable=False, comment="向量生成时间")
+
+    def __repr__(self):
+        return f"<NewsEmbedding(news_id={self.news_id}, embedding_model='{self.embedding_model}')>"
