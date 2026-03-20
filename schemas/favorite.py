@@ -8,6 +8,11 @@ from schemas.base import NewsItemBase
 class FavoriteCheckResponse(BaseModel):
     is_favorite: bool = Field(..., alias="isFavorite")
 
+    model_config = ConfigDict(
+        populate_by_name=True,
+        from_attributes=True
+    )
+
 
 class FavoriteAddRequest(BaseModel):
     news_id: int = Field(..., alias="newsId")
