@@ -13,10 +13,12 @@ from schemas.admin import (
     AdminLoginRequest,
     AdminLoginStreakListResponse,
     AdminLoginStreakUserResponse,
+    AdminNewsItemResponse,
     AdminNewsFavoriteRankingResponse,
     AdminNewsListResponse,
     AdminNewsPeakConcurrentViewItemResponse,
     AdminNewsPeakConcurrentViewResponse,
+    AdminUserItemResponse,
     AdminUserListResponse,
     AdminNewsFavoriteRankingItemResponse
 )
@@ -54,9 +56,10 @@ async def get_admin_user_list(
         page_size=page_size,
         keyword=keyword,
     )
+    user_rows = [AdminUserItemResponse.model_validate(row) for row in rows]
     has_more = page * page_size < total
     data = AdminUserListResponse(
-        list=rows,
+        list=user_rows,
         total=total,
         page=page,
         pageSize=page_size,
@@ -81,9 +84,10 @@ async def get_admin_news_list(
         keyword=keyword,
         category_id=category_id,
     )
+    news_rows = [AdminNewsItemResponse.model_validate(row) for row in rows]
     has_more = page * page_size < total
     data = AdminNewsListResponse(
-        list=rows,
+        list=news_rows,
         total=total,
         page=page,
         pageSize=page_size,
