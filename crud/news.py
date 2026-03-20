@@ -25,6 +25,8 @@ async def get_categories(db: AsyncSession, skip: int, limit: int = 20):
 
 async def get_news_list(db: AsyncSession, category_id: int, skip: int, limit: int):
     # skip = (page - 1)*limit
+    if limit <= 0:
+        return []
 
     page = skip // limit + 1
     cached_news_list = await get_cache_news_list(category_id, page, limit)
