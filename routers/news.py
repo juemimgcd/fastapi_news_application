@@ -8,15 +8,19 @@ router = APIRouter(prefix="/api/news", tags=["news"])
 
 
 @router.get("/categories")
-async def get_categories(skip: int = 0, limit: int = 20, db: AsyncSession = Depends(get_database)):
+async def get_categories(
+        skip: int = Query(0, ge=0),
+        limit: int = Query(20, ge=1, le=100),
+        db: AsyncSession = Depends(get_database)
+):
     categories = await news.get_categories(db, skip, limit)
     return success_response(message='success', data=categories)
 
 
 @router.get("/list")
-async def get_news_list(category_id=Query(..., alias="categoryId"),
+async def get_news_list(category_id: int = Query(..., alias="categoryId", ge=1),
                         page: int = Query(1, ge=1),
-                        page_size: int = Query(10, alias="pageSize", le=100),
+                        page_size: int = Query(10, alias="pageSize", ge=1, le=100),
                         db: AsyncSession = Depends(get_database)
                         ):
     offset = (page - 1) * page_size

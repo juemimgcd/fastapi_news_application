@@ -1,8 +1,7 @@
 from models.favorite import Favorite
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update, delete, func
+from sqlalchemy import select, delete, func
 from models.news import News
-from sqlalchemy.engine import CursorResult
 
 
 async def is_favorite(

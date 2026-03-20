@@ -1,4 +1,3 @@
-import json
 from fastapi.encoders import jsonable_encoder
 from models.news import News, Category
 from sqlalchemy import select, func, update, and_

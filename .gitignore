@@ -1,0 +1,25 @@
+# Python cache/artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+venv/
+
+# Environment files
+.env
+.venv/.env
+
+# IDE/editor
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Alembic cache
+alembic/__pycache__/
+alembic/versions/__pycache__/
