@@ -19,7 +19,7 @@ AsyncSessionLocal = async_sessionmaker(
 
 
 async def get_database():
-    async with AsyncSessionLocal as session:
+    async with AsyncSessionLocal() as session:
         try:
             yield session
             await session.commit()
