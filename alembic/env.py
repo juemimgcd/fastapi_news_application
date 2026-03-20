@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 from models.base import Base
-from models import admin, news,users,favorite,history
+from models import admin, news,users,favorite,history,admin
 
 
 

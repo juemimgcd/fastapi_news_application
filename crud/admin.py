@@ -7,14 +7,11 @@ from models.news import News
 from utils.admin_auth import authenticate_admin, create_admin_token
 
 
-
-
-
 async def get_admin_user_list(
-    db: AsyncSession,
-    page: int = 1,
-    page_size: int = 10,
-    keyword: str | None = None,
+        db: AsyncSession,
+        page: int = 1,
+        page_size: int = 10,
+        keyword: str | None = None,
 ):
     """
     分页查询全部用户，可按关键字筛选。
@@ -51,16 +48,12 @@ async def get_admin_user_list(
     return rows, total
 
 
-
-
-
-
 async def get_admin_news_list(
-    db: AsyncSession,
-    page: int = 1,
-    page_size: int = 10,
-    keyword: str | None = None,
-    category_id: int | None = None,
+        db: AsyncSession,
+        page: int = 1,
+        page_size: int = 10,
+        keyword: str | None = None,
+        category_id: int | None = None,
 ):
     """
     分页查询全部新闻，可按关键字和分类筛选。
@@ -87,20 +80,16 @@ async def get_admin_news_list(
     sql = select(func.count(News.id)).where(*filters)
     res2 = await db.execute(sql)
 
-    rows,total = res1.scalars().all(),res2.scalar_one_or_none()
+    rows, total = res1.scalars().all(), res2.scalar_one_or_none()
 
-    return rows,total
-
-
-
-
+    return rows, total
 
 
 async def get_users_with_login_streak(
-    db: AsyncSession,
-    days: int,
-    page: int = 1,
-    page_size: int = 10,
+        db: AsyncSession,
+        days: int,
+        page: int = 1,
+        page_size: int = 10,
 ):
     """
     返回满足连续登录天数的用户明细行，而不是纯 user_id 列表。
@@ -200,10 +189,11 @@ async def get_users_with_login_streak(
 
     return rows, total
 
+
 async def get_news_favorite_ranking(
-    db: AsyncSession,
-    limit: int = 10,
-    category_id: int | None = None,
+        db: AsyncSession,
+        limit: int = 10,
+        category_id: int | None = None,
 ):
     """
     查询新闻收藏数量排行榜。
@@ -238,10 +228,10 @@ async def get_news_favorite_ranking(
 
 
 async def get_news_peak_concurrent_viewers(
-    db: AsyncSession,
-    stat_date: date,
-    limit: int = 10,
-    category_id: int | None = None,
+        db: AsyncSession,
+        stat_date: date,
+        limit: int = 10,
+        category_id: int | None = None,
 ):
     """
     查询新闻峰值并发观看人数。
@@ -250,4 +240,3 @@ async def get_news_peak_concurrent_viewers(
     """
     _ = db, stat_date, limit, category_id
     return [], 0
-
