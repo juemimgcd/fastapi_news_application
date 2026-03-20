@@ -15,7 +15,7 @@ async def get_categories(skip: int = 0, limit: int = 20, db: AsyncSession = Depe
 
 @router.get("/list")
 async def get_news_list(category_id=Query(..., alias="categoryId"),
-                        page: int = 1,
+                        page: int = Query(1, ge=1),
                         page_size: int = Query(10, alias="pageSize", le=100),
                         db: AsyncSession = Depends(get_database)
                         ):
