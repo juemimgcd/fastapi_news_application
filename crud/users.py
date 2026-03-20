@@ -13,6 +13,13 @@ async def get_user_by_name(db: AsyncSession, username: str):
     return result.scalar_one_or_none()
 
 
+async def get_user_by_id(db: AsyncSession, user_id: int):
+    sql = select(User).where(User.username == user_id)
+    result = await db.execute(sql)
+    return result.scalar_one_or_none()
+
+
+
 async def create_user(db: AsyncSession, user_data: UserRequest):
     hash_password = security.get_hashed_password(password=user_data.password)
     user = User(username=user_data.username, password=hash_password)

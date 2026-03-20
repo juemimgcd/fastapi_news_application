@@ -1,3 +1,5 @@
+from datetime import date
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, func, text
 from models.users import User
@@ -100,6 +102,10 @@ async def get_users_with_login_streak(
     page: int = 1,
     page_size: int = 10,
 ):
+    """
+    返回满足连续登录天数的用户明细行，而不是纯 user_id 列表。
+    行字段包含：user_id / username / nickname / streak_days / last_login_date。
+    """
     offset = (page - 1) * page_size
 
     sql = text("""
@@ -231,6 +237,17 @@ async def get_news_favorite_ranking(
     return rows
 
 
-
-
+async def get_news_peak_concurrent_viewers(
+    db: AsyncSession,
+    stat_date: date,
+    limit: int = 10,
+    category_id: int | None = None,
+):
+    """
+    查询新闻峰值并发观看人数。
+    当前项目尚未落地观看会话/心跳基础表，无法计算真实并发值。
+    为了让接口可用，这里先返回空结果。
+    """
+    _ = db, stat_date, limit, category_id
+    return [], 0
 
