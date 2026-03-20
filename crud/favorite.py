@@ -57,7 +57,7 @@ async def get_favorite_list(
         page_size:int = 20
 
 ):
-    sql1 = select(func.count(Favorite)).where(Favorite.user_id == user_id)
+    sql1 = select(func.count(Favorite.id)).where(Favorite.user_id == user_id)
 
     result1 = await db.execute(sql1)
 
@@ -77,6 +77,7 @@ async def get_favorite_list(
 
     rows = result2.all()
     return rows,total
+
 
 
 async def remove_all_favorites(
