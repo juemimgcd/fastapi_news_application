@@ -312,7 +312,4 @@ VALUES (
 - 有用户行为沉淀与运营统计能力
 - 有缓存、迁移、容器化这些工程化能力
 - 有继续往后台看板、推荐、埋点分析方向扩展的空间
-
-如果你准备用它投暑期实习，这个项目比较适合被描述为：
-
-> 基于 FastAPI / PostgreSQL / Redis 独立设计并开发资讯平台后端，完成用户端与管理端核心接口，落地登录留痕、连续登录统计、收藏排行、Redis 缓存、Alembic 迁移及 Docker Compose 部署。
+基于 FastAPI / PostgreSQL / Redis 独立设计并开发资讯平台后端，完成用户端与管理端核心接口，落地登录留痕、连续登录统计、收藏排行、Redis 缓存、Alembic 迁移及 Docker Compose 部署。
