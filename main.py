@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from conf.db_conf import engine
 from conf.settings import settings
-from routers import admin, news,users,history,favorite
+from routers import admin, news, users, history, favorite
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -43,7 +44,4 @@ async def say_hello(name: str):
 
 
 if __name__ == '__main__':
-    uvicorn.run("main:app",reload=True,port=8000)
-
-
-
+    uvicorn.run("main:app", reload=True, port=8000)

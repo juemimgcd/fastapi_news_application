@@ -61,6 +61,9 @@ async def get_favorite_list(
         "favorite_id":favorite_id
     }for news,favorite_time,favorite_id in rows]
 
+
+
+
     has_more = total > page*page_size
 
     data = FavoriteListResponse(list=favorite_list,total=total,has_more=has_more)

@@ -3,6 +3,7 @@ from models.news import News, Category
 from sqlalchemy import select, func, update, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from cache.news_cache import get_cached_categories, get_cache_news_list, set_cache_categories, set_cache_news_list
+from conf.redis_conf import make_cache_key,get_json_cache,set_cache
 
 
 async def get_categories(db: AsyncSession, skip: int, limit: int = 20):
@@ -28,7 +29,19 @@ async def get_news_list(db: AsyncSession, category_id: int, skip: int, limit: in
         return []
 
     page = skip // limit + 1
-    cached_news_list = await get_cache_news_list(category_id, page, limit)
+    cache_key = await make_cache_key(
+        prefix="news:list",
+        parts={
+            "category_id":category_id,
+            "page":page,
+            "page_size":limit
+        }
+    )
+
+    cached_news_list = await get_json_cache(cache_key)
+
+    # cached_news_list = await get_cache_news_list(category_id, page, limit)
+
     if cached_news_list:
         return [News(**item) for item in cached_news_list]
 
@@ -39,7 +52,7 @@ async def get_news_list(db: AsyncSession, category_id: int, skip: int, limit: in
     news_list = result.scalars().all()
     if news_list:
         js = jsonable_encoder(news_list)
-        await set_cache_news_list(category_id, page, limit, js)
+        await set_cache(key=cache_key,value=js)
         return news_list
     return []
 

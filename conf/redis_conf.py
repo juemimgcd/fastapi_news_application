@@ -28,6 +28,27 @@ async def get_json_cache(key: str):
         return None
 
 
+
+async def make_cache_key(prefix:str,parts:dict[str,Any]):
+    seg = [prefix]
+
+    for k in list(parts.keys()):
+        v = parts[k]
+
+        if v is None:
+            v_str = "null"
+
+        elif isinstance(v,bool):
+            v_str = "1" if v else "0"
+        else:
+            v_str = str(v)
+
+        seg.append(f"{k} = {v_str}")
+
+    return "|".join(seg)
+
+
+
 async def set_cache(key: str, value: Any, expire: int = 1200):
     try:
         if isinstance(value, (dict, list)):
